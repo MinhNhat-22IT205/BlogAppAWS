@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Blog App</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ブログ</h1>
+    <form id="newPost">
+      <input type="text" id="title" placeholder="タイトル" required />
+      <textarea id="content" placeholder="内容..." required></textarea>
+      <button type="submit">投稿する</button>
+    </form>
+    <hr/>
+    <div id="posts"></div>
+  </div>
+
+  <script>
+    const api = "/api/posts";
+
+    async function loadPosts() {
+      const res = await fetch(api);
+      const posts = await res.json();
+      const container = document.getElementById("posts");
+      container.innerHTML = "";
+      posts.forEach(p => {
+        const el = document.createElement("div");
+        el.className = "post";
+        el.innerHTML = `
+          <h3>${p.title}</h3>
+          <p>${p.content}</p>
+          <div class="actions">
+            <button onclick="editPost(${p.id})">編集</button>
+            <button onclick="deletePost(${p.id})">削除</button>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    async function deletePost(id) {
+      await fetch(`${api}/${id}`, { method: "DELETE" });
+      loadPosts();
+    }
+
+    async function editPost(id) {
+      window.location.href = `/edit.html?id=${id}`;
+    }
+
+    document.getElementById("newPost").addEventListener("submit", async e => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+      await fetch(api, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content })
+      });
+      e.target.reset();
+      loadPosts();
+    });
+
+    loadPosts();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>Edit Blog</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ブログ編集</h1>
+    <form id="editForm">
+      <input type="text" id="title" required />
+      <textarea id="content" required></textarea>
+      <button type="submit">保存</button>
+    </form>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    const api = `/api/posts/${id}`;
+
+    async function loadPost() {
+      const res = await fetch(api);
+      const p = await res.json();
+      document.getElementById("title").value = p.title;
+      document.getElementById("content").value = p.content;
+    }
+
+    document.getElementById("editForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      await fetch(api, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: document.getElementById("title").value,
+          content: document.getElementById("content").value
+        })
+      });
+      location.href = "/";
+    });
+
+    loadPost();
+  </script>
+</body>
+</html>
+
