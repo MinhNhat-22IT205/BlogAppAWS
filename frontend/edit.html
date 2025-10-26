@@ -1,47 +1,86 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="utf-8" />
-  <title>Edit Blog</title>
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-  <div class="container">
-    <h1>ブログ編集</h1>
-    <form id="editForm">
-      <input type="text" id="title" required />
-      <textarea id="content" required></textarea>
-      <button type="submit">保存</button>
-    </form>
-  </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Blog</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>ブログ編集</h1>
 
-  <script>
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    const api = `/api/posts/${id}`;
+      <form id="editForm" class="blog-form">
+        <input
+          type="text"
+          id="title"
+          placeholder="タイトル"
+          required
+        />
+        <textarea
+          id="content"
+          placeholder="内容..."
+          required
+        ></textarea>
 
-    async function loadPost() {
-      const res = await fetch(api);
-      const p = await res.json();
-      document.getElementById("title").value = p.title;
-      document.getElementById("content").value = p.content;
-    }
+        <div class="form-actions">
+          <a href="/" class="btn-cancel">キャンセル</a>
+          <button type="submit">保存</button>
+        </div>
+      </form>
+    </div>
 
-    document.getElementById("editForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      await fetch(api, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: document.getElementById("title").value,
-          content: document.getElementById("content").value
-        })
+    <script>
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+      const api = `/api/posts/${id}`;
+
+      const editForm = document.getElementById("editForm");
+      const titleInput = document.getElementById("title");
+      const contentInput = document.getElementById("content");
+
+      async function loadPost() {
+        try {
+          const res = await fetch(api);
+          if (!res.ok) throw new Error("Post not found");
+          const p = await res.json();
+          titleInput.value = p.title;
+          contentInput.value = p.content;
+        } catch (error) {
+          console.error("Failed to load post:", error);
+          alert("投稿の読み込みに失敗しました。");
+          location.href = "/"; // Quay lại trang chủ nếu lỗi
+        }
+      }
+
+      editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Cải tiến UX: Vô hiệu hóa nút khi gửi
+        const submitButton = editForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = "保存中...";
+
+        try {
+          await fetch(api, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: titleInput.value,
+              content: contentInput.value,
+            }),
+          });
+          location.href = "/"; // Quay về trang chủ sau khi lưu
+        } catch (error) {
+          console.error("Failed to save post:", error);
+          alert("保存に失敗しました。");
+          // Bật lại nút nếu có lỗi
+          submitButton.disabled = false;
+          submitButton.textContent = "保存";
+        }
       });
-      location.href = "/";
-    });
 
-    loadPost();
-  </script>
-</body>
+      loadPost();
+    </script>
+  </body>
 </html>
-
