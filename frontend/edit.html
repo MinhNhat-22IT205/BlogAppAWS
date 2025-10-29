@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Blog</title>
+    <title>Edit Flashcard</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <div class="container">
-      <h1>ブログ編集</h1>
+      <h1>カード編集</h1>
 
-      <form id="editForm" class="blog-form">
+      <form id="editForm" class="card-form">
         <input
           type="text"
-          id="title"
-          placeholder="タイトル"
+          id="front"
+          placeholder="表面 (質問)"
           required
         />
         <textarea
-          id="content"
-          placeholder="内容..."
+          id="back"
+          placeholder="裏面 (答え)"
           required
         ></textarea>
 
@@ -33,31 +33,32 @@
     <script>
       const params = new URLSearchParams(location.search);
       const id = params.get("id");
-      const api = `/api/posts/${id}`;
+      const api = `/api/flashcards/${id}`; // Đổi API endpoint
 
       const editForm = document.getElementById("editForm");
-      const titleInput = document.getElementById("title");
-      const contentInput = document.getElementById("content");
+      const frontInput = document.getElementById("front"); // Đổi từ titleInput
+      const backInput = document.getElementById("back"); // Đổi từ contentInput
 
-      async function loadPost() {
+      async function loadCard() {
         try {
           const res = await fetch(api);
-          if (!res.ok) throw new Error("Post not found");
-          const p = await res.json();
-          titleInput.value = p.title;
-          contentInput.value = p.content;
+          if (!res.ok) throw new Error("Card not found");
+          const card = await res.json(); // Đổi tên biến
+          frontInput.value = card.front; // Đổi từ title
+          backInput.value = card.back; // Đổi từ content
         } catch (error) {
-          console.error("Failed to load post:", error);
-          alert("投稿の読み込みに失敗しました。");
-          location.href = "/"; // Quay lại trang chủ nếu lỗi
+          console.error("Failed to load card:", error);
+          alert("カードの読み込みに失敗しました。");
+          location.href = "/";
         }
       }
 
       editForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // Cải tiến UX: Vô hiệu hóa nút khi gửi
-        const submitButton = editForm.querySelector('button[type="submit"]');
+        const submitButton = editForm.querySelector(
+          'button[type="submit"]'
+        );
         submitButton.disabled = true;
         submitButton.textContent = "保存中...";
 
@@ -66,21 +67,20 @@
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              title: titleInput.value,
-              content: contentInput.value,
+              front: frontInput.value, // Gửi 'front'
+              back: backInput.value, // Gửi 'back'
             }),
           });
-          location.href = "/"; // Quay về trang chủ sau khi lưu
+          location.href = "/";
         } catch (error) {
-          console.error("Failed to save post:", error);
+          console.error("Failed to save card:", error);
           alert("保存に失敗しました。");
-          // Bật lại nút nếu có lỗi
           submitButton.disabled = false;
           submitButton.textContent = "保存";
         }
       });
 
-      loadPost();
+      loadCard(); // Đổi tên hàm
     </script>
   </body>
 </html>
