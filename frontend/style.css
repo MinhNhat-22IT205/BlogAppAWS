@@ -1,16 +1,10 @@
 /* --- 1. Import Google Fonts --- */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap");
 
-/*
-  'Poppins' cho tiêu đề (headings)
-  'Lato' cho nội dung (body text)
-*/
-
-/* --- 2. Thiết lập Global & Nền --- */
+/* --- 2. Thiết lập Global --- */
 body {
   font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
-  /* Thay thế gradient bằng một màu xám nhạt, sạch sẽ */
   background-color: #f5f7fa;
   color: #343a40;
   line-height: 1.7;
@@ -20,7 +14,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px; /* Tăng độ rộng để chứa lưới thẻ */
   margin: 20px auto;
   background-color: #ffffff;
   padding: 40px;
@@ -34,7 +28,6 @@ h1 {
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 30px;
-  /* Thay thế gradient bằng một màu tối, mạnh mẽ */
   color: #2c3e50;
 }
 
@@ -46,15 +39,15 @@ hr {
   margin: 50px auto;
 }
 
-/* --- 3. Form Đăng bài --- */
-#newPost {
+/* --- 3. Form Tạo Thẻ (Đổi tên từ .blog-form) --- */
+.card-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-#newPost input[type="text"],
-#newPost textarea {
+.card-form input[type="text"],
+.card-form textarea {
   font-family: "Lato", sans-serif;
   width: 100%;
   padding: 15px;
@@ -67,18 +60,17 @@ hr {
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
-/* Màu nhấn #667eea vẫn được giữ lại ở đây cho sự nhất quán */
-#newPost input[type="text"]:focus,
-#newPost textarea:focus {
+.card-form input[type="text"]:focus,
+.card-form textarea:focus {
   background-color: #fff;
-  border-color: #667eea; /* Màu nhấn */
+  border-color: #667eea;
   outline: none;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-#newPost textarea {
+.card-form textarea {
   resize: vertical;
-  min-height: 140px;
+  min-height: 100px; /* Giảm chiều cao cho form flashcard */
 }
 
 /* --- 4. Nút bấm (Button) --- */
@@ -97,74 +89,20 @@ button:active {
   transform: scale(0.97);
 }
 
-/* Nút "Đăng" chính - Màu xanh dương đơn sắc */
-#newPost button[type="submit"] {
-  background-color: #667eea; /* Màu accent chính */
+/* Nút "Tạo" chính */
+.card-form button[type="submit"] {
+  background-color: #667eea;
   color: white;
-  /* Cập nhật bóng đổ để khớp với màu xanh */
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
-#newPost button[type="submit"]:hover {
-  background-color: #5a6bbd; /* Màu xanh đậm hơn khi hover */
+.card-form button[type="submit"]:hover {
+  background-color: #5a6bbd;
   transform: translateY(-2px);
-  /* Cập nhật bóng đổ khi hover */
   box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* --- 5. Danh sách Bài đăng --- */
-#posts {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.post {
-  background-color: #ffffff;
-  border-radius: 8px;
-  padding: 25px;
-  /* Giữ lại viền trái màu accent */
-  border-left: 5px solid #667eea;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.post:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.post h3 {
-  font-family: "Poppins", sans-serif;
-  font-weight: 600;
-  font-size: 1.5rem;
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #2c3e50;
-}
-
-.post p {
-  color: #555;
-  white-space: pre-wrap;
-  margin-bottom: 20px;
-}
-
-/* Khu vực nút Sửa/Xóa */
-.post .actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.post .actions button {
-  background-color: transparent;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 2px solid;
-}
-
+/* Nút Sửa/Xóa (Chung) */
 .btn-edit {
   color: #007bff;
   border-color: #007bff;
@@ -173,7 +111,6 @@ button:active {
   background-color: #007bff;
   color: #fff;
 }
-
 .btn-delete {
   color: #dc3545;
   border-color: #dc3545;
@@ -183,41 +120,27 @@ button:active {
   color: #fff;
 }
 
-/* --- 6. Thông báo trạng thái (Loading/Empty) --- */
-.status-message {
-  text-align: center;
-  color: #888;
-  font-style: italic;
-  font-size: 1.1rem;
-  padding: 30px 0;
-}
-/* --- CSS cho nhóm Nút Form (Lưu/Hủy) --- */
+/* Nút Hủy (Trang Edit) */
 .form-actions {
   display: flex;
-  justify-content: flex-end; /* Đẩy các nút về bên phải */
+  justify-content: flex-end;
   gap: 15px;
   margin-top: 10px;
 }
-
-/* Nút "Lưu" (chính) */
 .form-actions button[type="submit"] {
-  background-color: #667eea; /* Màu accent chính */
+  background-color: #667eea;
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
-
 .form-actions button[type="submit"]:hover {
   background-color: #5a6bbd;
   transform: translateY(-2px);
-  box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
 }
-
-/* Nút "Hủy" (phụ) */
 .btn-cancel {
   background-color: #f8f9fa;
   color: #555;
   border: 1px solid #ccc;
-  text-decoration: none; /* Vì nó là thẻ <a> */
+  text-decoration: none;
   padding: 12px 20px;
   font-size: 16px;
   font-weight: 600;
@@ -225,8 +148,106 @@ button:active {
   font-family: "Poppins", sans-serif;
   transition: all 0.3s ease;
 }
-
 .btn-cancel:hover {
   background-color: #e9ecef;
-  border-color: #bbb;
+}
+
+/* --- 5. Lưới Flashcard --- */
+#card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+/* --- 6. Kiểu Flashcard (Hiệu ứng Lật) --- */
+.flashcard {
+  background-color: transparent;
+  perspective: 1000px; /* Cho hiệu ứng 3D */
+  min-height: 200px;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  /* Bóng đổ sẽ ở trên các mặt (front/back) */
+}
+
+/* Lớp .is-flipped được thêm bằng JS */
+.flashcard.is-flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Safari */
+  backface-visibility: hidden;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.flashcard-front {
+  background-color: #ffffff;
+  border-left: 5px solid #667eea;
+}
+
+.flashcard-back {
+  background-color: #f8f9fa; /* Màu khác cho mặt sau */
+  border-left: 5px solid #007bff;
+  transform: rotateY(180deg);
+}
+
+.flashcard h3 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.flashcard p {
+  font-size: 1rem;
+  color: #555;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* Nút Sửa/Xóa nằm dưới thẻ */
+.flashcard .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.flashcard .actions button {
+  background-color: transparent;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 2px solid;
+}
+
+/* --- 7. Thông báo trạng thái --- */
+.status-message {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  font-size: 1.1rem;
+  padding: 30px 0;
+  /* Đảm bảo nó chiếm cả lưới */
+  grid-column: 1 / -1;
 }

@@ -3,133 +3,152 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog App</title>
+    <title>Flashcard App</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <div class="container">
-      <h1>ブログ</h1>
-      <form id="newPost">
-        <input type="text" id="title" placeholder="タイトル" required />
-        <textarea id="content" placeholder="内容..." required></textarea>
-        <button type="submit">投稿する</button>
+      <h1>フラッシュカード</h1>
+      <form id="newCardForm" class="card-form">
+        <input
+          type="text"
+          id="front"
+          placeholder="表面 (質問)"
+          required
+        />
+        <textarea
+          id="back"
+          placeholder="裏面 (答え)"
+          required
+        ></textarea>
+        <button type="submit">作成する</button>
       </form>
       <hr />
-      <div id="posts"></div>
-      </div>
+      <div id="card-container"></div>
+    </div>
 
     <script>
-      const api = "/api/posts";
-      const postsContainer = document.getElementById("posts");
-      const newPostForm = document.getElementById("newPost");
+      const api = "/api/flashcards"; // Đổi API endpoint
+      const cardContainer = document.getElementById("card-container");
+      const newCardForm = document.getElementById("newCardForm");
 
-      // Hàm hiển thị thông báo trạng thái (loading, empty, error)
       function showStatus(message) {
-        postsContainer.innerHTML = `<p class="status-message">${message}</p>`;
+        cardContainer.innerHTML = `<p class="status-message">${message}</p>`;
       }
 
-      async function loadPosts() {
-        showStatus("読み込み中..."); // Hiển thị "Đang tải..."
+      async function loadCards() {
+        showStatus("読み込み中...");
         try {
           const res = await fetch(api);
           if (!res.ok) throw new Error("Network response was not ok");
-          const posts = await res.json();
+          const cards = await res.json();
 
-          postsContainer.innerHTML = ""; // Xóa thông báo loading
+          cardContainer.innerHTML = "";
 
-          if (posts.length === 0) {
-            showStatus("まだ投稿がありません。"); // Hiển thị khi không có bài
+          if (cards.length === 0) {
+            showStatus("まだカードがありません。");
             return;
           }
 
-          posts.forEach((p) => {
+          cards.forEach((card) => {
             const el = document.createElement("div");
-            el.className = "post";
+            el.className = "flashcard";
+
+            // Cấu trúc HTML cho thẻ lật
             el.innerHTML = `
-              <h3>${escapeHTML(p.title)}</h3>
-              <p>${escapeHTML(p.content)}</p>
+              <div class="flashcard-inner">
+                <div class="flashcard-front">
+                  <h3>${escapeHTML(card.front)}</h3>
+                </div>
+                <div class="flashcard-back">
+                  <p>${escapeHTML(card.back)}</p>
+                </div>
+              </div>
               <div class="actions">
-                <button class="btn-edit" onclick="editPost(${p.id})">編集</button>
-                <button class="btn-delete" onclick="deletePost(${
-                  p.id
+                <button class="btn-edit" onclick="editCard(event, ${
+                  card.id
+                })">編集</button>
+                <button class="btn-delete" onclick="deleteCard(event, ${
+                  card.id
                 })">削除</button>
               </div>
             `;
-            postsContainer.appendChild(el);
+
+            // Thêm sự kiện click để lật thẻ
+            const inner = el.querySelector(".flashcard-inner");
+            inner.addEventListener("click", () => {
+              el.classList.toggle("is-flipped");
+            });
+
+            cardContainer.appendChild(el);
           });
         } catch (error) {
-          console.error("Failed to load posts:", error);
-          showStatus("エラーが発生しました。"); // Hiển thị lỗi
+          console.error("Failed to load cards:", error);
+          showStatus("エラーが発生しました。");
         }
       }
 
-      async function deletePost(id) {
-        // THÊM XÁC NHẬN: Đây là một cải tiến UX quan trọng
+      async function deleteCard(event, id) {
+        event.stopPropagation(); // Ngăn thẻ lật khi nhấn nút
         if (!confirm("本当に削除しますか？")) {
-          return; // Hủy nếu người dùng không đồng ý
+          return;
         }
-
         try {
           await fetch(`${api}/${id}`, { method: "DELETE" });
-          loadPosts(); // Tải lại danh sách sau khi xóa
+          loadCards();
         } catch (error) {
-          console.error("Failed to delete post:", error);
+          console.error("Failed to delete card:", error);
           alert("削除に失敗しました。");
         }
       }
 
-      function editPost(id) {
-        // Chức năng này vẫn giữ nguyên
+      function editCard(event, id) {
+        event.stopPropagation(); // Ngăn thẻ lật khi nhấn nút
         window.location.href = `/edit.html?id=${id}`;
       }
 
-      newPostForm.addEventListener("submit", async (e) => {
+      newCardForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const titleInput = document.getElementById("title");
-        const contentInput = document.getElementById("content");
+        const frontInput = document.getElementById("front");
+        const backInput = document.getElementById("back");
 
-        const title = titleInput.value;
-        const content = contentInput.value;
+        const front = frontInput.value;
+        const back = backInput.value;
 
-        // Vô hiệu hóa nút submit để tránh gửi nhiều lần
-        const submitButton = newPostForm.querySelector('button[type="submit"]');
+        const submitButton = newCardForm.querySelector(
+          'button[type="submit"]'
+        );
         submitButton.disabled = true;
-        submitButton.textContent = "投稿中...";
+        submitButton.textContent = "作成中...";
 
         try {
           await fetch(api, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, content }),
+            body: JSON.stringify({ front, back }), // Gửi 'front' và 'back'
           });
-          
-          newPostForm.reset(); // Xóa form
-          loadPosts(); // Tải lại danh sách
+
+          newCardForm.reset();
+          loadCards();
         } catch (error) {
-          console.error("Failed to create post:", error);
-          alert("投稿に失敗しました。");
+          console.error("Failed to create card:", error);
+          alert("作成に失敗しました。");
         } finally {
-          // Bật lại nút sau khi hoàn tất
           submitButton.disabled = false;
-          submitButton.textContent = "投稿する";
+          submitButton.textContent = "作成する";
         }
       });
 
-      // Hàm nhỏ để bảo mật: tránh lỗi XSS cơ bản
       function escapeHTML(str) {
-        return str.replace(/[&<>"']/g, function(match) {
-          return {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-          }[match];
-        });
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
 
-      // Tải bài đăng lần đầu khi trang mở
-      loadPosts();
+      loadCards();
     </script>
   </body>
 </html>

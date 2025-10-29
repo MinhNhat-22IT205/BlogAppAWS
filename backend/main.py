@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import database, models
 
-app = FastAPI(title="Blog API")
+app = FastAPI(title="Flashcard API") # Đổi tên
 
-# Create tables (only first time)
+# Create tables
 models.Base.metadata.create_all(bind=database.engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # for local testing
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,42 +27,46 @@ def get_db():
 def health():
     return {"status": "ok"}
 
-@app.get("/api/posts")
-def list_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Blog).order_by(models.Blog.created_at.desc()).all()
-    return posts
+# --- Đã đổi tên từ /api/posts sang /api/flashcards ---
 
-@app.post("/api/posts")
-def create_post(data: dict, db: Session = Depends(get_db)):
-    post = models.Blog(title=data["title"], content=data["content"])
-    db.add(post)
+@app.get("/api/flashcards")
+def list_cards(db: Session = Depends(get_db)):
+    cards = db.query(models.Flashcard).order_by(models.Flashcard.created_at.desc()).all()
+    return cards
+
+@app.post("/api/flashcards")
+def create_card(data: dict, db: Session = Depends(get_db)):
+    # Đổi 'title' và 'content' thành 'front' và 'back'
+    card = models.Flashcard(front=data["front"], back=data["back"])
+    db.add(card)
     db.commit()
-    db.refresh(post)
-    return post
+    db.refresh(card)
+    return card
 
-@app.get("/api/posts/{post_id}")
-def get_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Blog).filter(models.Blog.id == post_id).first()
-    if not post:
+@app.get("/api/flashcards/{card_id}")
+def get_card(card_id: int, db: Session = Depends(get_db)):
+    card = db.query(models.Flashcard).filter(models.Flashcard.id == card_id).first()
+    if not card:
         raise HTTPException(status_code=404, detail="Not found")
-    return post
+    return card
 
-@app.put("/api/posts/{post_id}")
-def update_post(post_id: int, data: dict, db: Session = Depends(get_db)):
-    post = db.query(models.Blog).filter(models.Blog.id == post_id).first()
-    if not post:
+@app.put("/api/flashcards/{card_id}")
+def update_card(card_id: int, data: dict, db: Session = Depends(get_db)):
+    card = db.query(models.Flashcard).filter(models.Flashcard.id == card_id).first()
+    if not card:
         raise HTTPException(status_code=404, detail="Not found")
-    post.title = data["title"]
-    post.content = data["content"]
+    
+    # Đổi 'title' và 'content' thành 'front' và 'back'
+    card.front = data["front"]
+    card.back = data["back"]
     db.commit()
-    return post
+    return card
 
-@app.delete("/api/posts/{post_id}")
-def delete_post(post_id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Blog).filter(models.Blog.id == post_id).first()
-    if not post:
+@app.delete("/api/flashcards/{card_id}")
+def delete_card(card_id: int, db: Session = Depends(get_db)):
+    card = db.query(models.Flashcard).filter(models.Flashcard.id == card_id).first()
+    if not card:
         raise HTTPException(status_code=404, detail="Not found")
-    db.delete(post)
+    db.delete(card)
     db.commit()
     return {"message": "Deleted"}
-
