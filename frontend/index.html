@@ -24,118 +24,198 @@
         <button type="submit">作成する</button>
       </form>
       <hr />
-      <div id="card-container"></div>
+
+      <div id="study-area" style="display: none">
+        <div id="progressCounter"></div>
+
+        <div id="card-flipper">
+          <button id="prevBtn" class="nav-btn" title="Previous card">
+            &lt;
+          </button>
+          
+          <div id="current-card" class="flashcard">
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <h3></h3>
+              </div>
+              <div class="flashcard-back">
+                <p></p>
+              </div>
+            </div>
+          </div>
+          
+          <button id="nextBtn" class="nav-btn" title="Next card">
+            &gt;
+          </button>
+        </div>
+
+        <div id="card-actions" class="actions">
+          <button class="btn-edit" id="editBtn">編集</button>
+          <button class="btn-delete" id="deleteBtn">削除</button>
+        </div>
+      </div>
+
+      <div id="status-message-container"></div>
+
     </div>
 
     <script>
-      const api = "/api/flashcards"; // Đổi API endpoint
-      const cardContainer = document.getElementById("card-container");
+      const api = "/api/flashcards";
+      
+      // Tham chiếu đến các phần tử UI
       const newCardForm = document.getElementById("newCardForm");
+      const studyArea = document.getElementById("study-area");
+      const statusContainer = document.getElementById("status-message-container");
+      
+      const currentCardEl = document.getElementById("current-card");
+      const cardInner = currentCardEl.querySelector(".flashcard-inner");
+      const cardFront = currentCardEl.querySelector(".flashcard-front h3");
+      const cardBack = currentCardEl.querySelector(".flashcard-back p");
 
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const progressCounter = document.getElementById("progressCounter");
+
+      const editBtn = document.getElementById("editBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+
+      // Biến trạng thái
+      let allCards = [];
+      let currentIndex = 0;
+
+      // --- Hàm hiển thị ---
       function showStatus(message) {
-        cardContainer.innerHTML = `<p class="status-message">${message}</p>`;
+        studyArea.style.display = "none"; // Ẩn khu vực học
+        statusContainer.innerHTML = `<p class="status-message">${message}</p>`;
       }
+
+      function displayCurrentCard() {
+        if (allCards.length === 0) {
+          showStatus("まだカードがありません。");
+          return;
+        }
+
+        // Hiển thị khu vực học và ẩn thông báo
+        studyArea.style.display = "block";
+        statusContainer.innerHTML = "";
+
+        // Lấy thẻ hiện tại
+        const card = allCards[currentIndex];
+
+        // Cập nhật nội dung thẻ
+        cardFront.innerHTML = escapeHTML(card.front);
+        cardBack.innerHTML = escapeHTML(card.back);
+
+        // Reset trạng thái lật thẻ
+        currentCardEl.classList.remove("is-flipped");
+
+        // Cập nhật tiến độ
+        progressCounter.textContent = `${currentIndex + 1} / ${allCards.length}`;
+
+        // Cập nhật trạng thái nút
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === allCards.length - 1;
+
+        // Cập nhật sự kiện cho nút Sửa/Xóa
+        editBtn.onclick = () => editCard(card.id);
+        deleteBtn.onclick = () => deleteCard(card.id);
+      }
+
+      // --- Hàm tải và xử lý dữ liệu ---
 
       async function loadCards() {
         showStatus("読み込み中...");
         try {
           const res = await fetch(api);
           if (!res.ok) throw new Error("Network response was not ok");
-          const cards = await res.json();
-
-          cardContainer.innerHTML = "";
-
-          if (cards.length === 0) {
-            showStatus("まだカードがありません。");
-            return;
-          }
-
-          cards.forEach((card) => {
-            const el = document.createElement("div");
-            el.className = "flashcard";
-
-            // Cấu trúc HTML cho thẻ lật
-            el.innerHTML = `
-              <div class="flashcard-inner">
-                <div class="flashcard-front">
-                  <h3>${escapeHTML(card.front)}</h3>
-                </div>
-                <div class="flashcard-back">
-                  <p>${escapeHTML(card.back)}</p>
-                </div>
-              </div>
-              <div class="actions">
-                <button class="btn-edit" onclick="editCard(event, ${
-                  card.id
-                })">編集</button>
-                <button class="btn-delete" onclick="deleteCard(event, ${
-                  card.id
-                })">削除</button>
-              </div>
-            `;
-
-            // Thêm sự kiện click để lật thẻ
-            const inner = el.querySelector(".flashcard-inner");
-            inner.addEventListener("click", () => {
-              el.classList.toggle("is-flipped");
-            });
-
-            cardContainer.appendChild(el);
-          });
+          allCards = await res.json();
+          currentIndex = 0; // Luôn bắt đầu từ thẻ đầu tiên
+          displayCurrentCard();
         } catch (error) {
           console.error("Failed to load cards:", error);
           showStatus("エラーが発生しました。");
         }
       }
 
-      async function deleteCard(event, id) {
-        event.stopPropagation(); // Ngăn thẻ lật khi nhấn nút
+      async function deleteCard(id) {
         if (!confirm("本当に削除しますか？")) {
           return;
         }
         try {
           await fetch(`${api}/${id}`, { method: "DELETE" });
-          loadCards();
+          
+          // Xóa thẻ khỏi mảng JS (tốt hơn là tải lại)
+          allCards = allCards.filter(card => card.id !== id);
+
+          // Điều chỉnh index nếu xóa thẻ cuối
+          if (currentIndex >= allCards.length) {
+            currentIndex = allCards.length - 1;
+          }
+          
+          displayCurrentCard(); // Hiển thị lại
         } catch (error) {
           console.error("Failed to delete card:", error);
           alert("削除に失敗しました。");
         }
       }
 
-      function editCard(event, id) {
-        event.stopPropagation(); // Ngăn thẻ lật khi nhấn nút
+      function editCard(id) {
         window.location.href = `/edit.html?id=${id}`;
       }
 
       newCardForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const frontInput = document.getElementById("front");
-        const backInput = document.getElementById("back");
+        const front = document.getElementById("front").value;
+        const back = document.getElementById("back").value;
+        const submitButton = newCardForm.querySelector('button[type="submit"]');
 
-        const front = frontInput.value;
-        const back = backInput.value;
-
-        const submitButton = newCardForm.querySelector(
-          'button[type="submit"]'
-        );
         submitButton.disabled = true;
         submitButton.textContent = "作成中...";
 
         try {
-          await fetch(api, {
+          const res = await fetch(api, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ front, back }), // Gửi 'front' và 'back'
+            body: JSON.stringify({ front, back }),
           });
-
+          const newCard = await res.json();
+          
+          // Thêm thẻ mới vào mảng JS
+          allCards.push(newCard);
+          // Chuyển đến thẻ mới tạo
+          currentIndex = allCards.length - 1; 
+          
           newCardForm.reset();
-          loadCards();
+          displayCurrentCard(); // Hiển thị thẻ mới
         } catch (error) {
           console.error("Failed to create card:", error);
           alert("作成に失敗しました。");
         } finally {
           submitButton.disabled = false;
           submitButton.textContent = "作成する";
+        }
+      });
+
+      // --- Gắn sự kiện điều hướng ---
+      
+      // Lật thẻ
+      currentCardEl.addEventListener("click", () => {
+        currentCardEl.classList.toggle("is-flipped");
+      });
+
+      // Nút Tiếp theo
+      nextBtn.addEventListener("click", () => {
+        if (currentIndex < allCards.length - 1) {
+          currentIndex++;
+          displayCurrentCard();
+        }
+      });
+
+      // Nút Quay lại
+      prevBtn.addEventListener("click", () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          displayCurrentCard();
         }
       });
 
@@ -148,6 +228,7 @@
           .replace(/'/g, "&#39;");
       }
 
+      // --- Khởi chạy ---
       loadCards();
     </script>
   </body>

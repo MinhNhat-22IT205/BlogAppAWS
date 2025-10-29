@@ -14,7 +14,7 @@ body {
 }
 
 .container {
-  max-width: 900px; /* Tăng độ rộng để chứa lưới thẻ */
+  max-width: 800px; /* Thu hẹp lại cho giao diện 1 thẻ */
   margin: 20px auto;
   background-color: #ffffff;
   padding: 40px;
@@ -39,13 +39,13 @@ hr {
   margin: 50px auto;
 }
 
-/* --- 3. Form Tạo Thẻ (Đổi tên từ .blog-form) --- */
+/* --- 3. Form Tạo Thẻ --- */
+/* (Giữ nguyên từ trước) */
 .card-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-
 .card-form input[type="text"],
 .card-form textarea {
   font-family: "Lato", sans-serif;
@@ -59,7 +59,6 @@ hr {
   border-bottom: 3px solid transparent;
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
-
 .card-form input[type="text"]:focus,
 .card-form textarea:focus {
   background-color: #fff;
@@ -67,13 +66,23 @@ hr {
   outline: none;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
-
 .card-form textarea {
   resize: vertical;
-  min-height: 100px; /* Giảm chiều cao cho form flashcard */
+  min-height: 100px;
+}
+.card-form button[type="submit"] {
+  background-color: #667eea;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+.card-form button[type="submit"]:hover {
+  background-color: #5a6bbd;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
 }
 
-/* --- 4. Nút bấm (Button) --- */
+/* --- 4. Nút Sửa/Xóa (Chung) --- */
+/* (Giữ nguyên từ trước) */
 button {
   cursor: pointer;
   padding: 12px 20px;
@@ -84,100 +93,91 @@ button {
   transition: all 0.3s ease;
   font-family: "Poppins", sans-serif;
 }
-
 button:active {
   transform: scale(0.97);
 }
+.btn-edit { color: #007bff; border-color: #007bff; }
+.btn-edit:hover { background-color: #007bff; color: #fff; }
+.btn-delete { color: #dc3545; border-color: #dc3545; }
+.btn-delete:hover { background-color: #dc3545; color: #fff; }
+.form-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px; }
+.form-actions button[type="submit"] { background-color: #667eea; color: white; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+.form-actions button[type="submit"]:hover { background-color: #5a6bbd; }
+.btn-cancel { background-color: #f8f9fa; color: #555; border: 1px solid #ccc; text-decoration: none; padding: 12px 20px; font-size: 16px; font-weight: 600; border-radius: 8px; font-family: "Poppins", sans-serif; transition: all 0.3s ease; }
+.btn-cancel:hover { background-color: #e9ecef; }
 
-/* Nút "Tạo" chính */
-.card-form button[type="submit"] {
-  background-color: #667eea;
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
+/* --- 5. Giao diện HỌC (MỚI) --- */
 
-.card-form button[type="submit"]:hover {
-  background-color: #5a6bbd;
-  transform: translateY(-2px);
-  box-shadow: 0 7px 20px rgba(102, 126, 234, 0.4);
-}
+/* Xóa style lưới cũ */
+/* #card-container { ... } đã bị xóa */
 
-/* Nút Sửa/Xóa (Chung) */
-.btn-edit {
-  color: #007bff;
-  border-color: #007bff;
-}
-.btn-edit:hover {
-  background-color: #007bff;
-  color: #fff;
-}
-.btn-delete {
-  color: #dc3545;
-  border-color: #dc3545;
-}
-.btn-delete:hover {
-  background-color: #dc3545;
-  color: #fff;
+/* Khu vực học (chứa thẻ, nút, tiến độ) */
+#study-area {
+  width: 100%;
+  margin-top: 30px;
 }
 
-/* Nút Hủy (Trang Edit) */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 10px;
-}
-.form-actions button[type="submit"] {
-  background-color: #667eea;
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-.form-actions button[type="submit"]:hover {
-  background-color: #5a6bbd;
-  transform: translateY(-2px);
-}
-.btn-cancel {
-  background-color: #f8f9fa;
-  color: #555;
-  border: 1px solid #ccc;
-  text-decoration: none;
-  padding: 12px 20px;
-  font-size: 16px;
+/* Bộ đếm tiến độ */
+#progressCounter {
+  text-align: center;
+  font-size: 1.1rem;
   font-weight: 600;
-  border-radius: 8px;
+  color: #555;
+  margin-bottom: 15px;
   font-family: "Poppins", sans-serif;
-  transition: all 0.3s ease;
 }
-.btn-cancel:hover {
+
+/* Bộ điều khiển lật thẻ (chứa nút <, thẻ, nút >) */
+#card-flipper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Nút điều hướng < và > */
+.nav-btn {
   background-color: #e9ecef;
+  color: #555;
+  font-size: 2rem;
+  font-weight: 600;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%; /* Bo tròn */
+  padding: 0;
+  line-height: 50px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.nav-btn:hover {
+  background-color: #dfe3e7;
+}
+.nav-btn:disabled {
+  background-color: #f8f9fa;
+  color: #ccc;
+  cursor: not-allowed;
 }
 
-/* --- 5. Lưới Flashcard --- */
-#card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 25px;
-}
-
-/* --- 6. Kiểu Flashcard (Hiệu ứng Lật) --- */
+/* Thẻ lật (tái sử dụng từ CSS cũ nhưng tùy chỉnh) */
 .flashcard {
   background-color: transparent;
-  perspective: 1000px; /* Cho hiệu ứng 3D */
-  min-height: 200px;
+  perspective: 1000px;
+  min-height: 300px; /* Thẻ cao hơn */
+  width: 100%; /* Chiếm toàn bộ không gian giữa 2 nút */
+  flex-grow: 1; /* Cho phép thẻ co giãn */
 }
 
 .flashcard-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 200px;
+  min-height: 300px;
   transition: transform 0.6s;
   transform-style: preserve-3d;
   cursor: pointer;
-  /* Bóng đổ sẽ ở trên các mặt (front/back) */
 }
 
-/* Lớp .is-flipped được thêm bằng JS */
 .flashcard.is-flipped .flashcard-inner {
   transform: rotateY(180deg);
 }
@@ -187,16 +187,17 @@ button:active {
   position: absolute;
   width: 100%;
   height: 100%;
-  -webkit-backface-visibility: hidden; /* Safari */
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 25px;
   box-sizing: border-box;
   text-align: center;
+  font-size: 1.5rem; /* Chữ to hơn */
 }
 
 .flashcard-front {
@@ -205,49 +206,40 @@ button:active {
 }
 
 .flashcard-back {
-  background-color: #f8f9fa; /* Màu khác cho mặt sau */
+  background-color: #f8f9fa;
   border-left: 5px solid #007bff;
   transform: rotateY(180deg);
 }
 
-.flashcard h3 {
+.flashcard h3,
+.flashcard p {
   font-family: "Poppins", sans-serif;
   font-weight: 600;
-  font-size: 1.2rem;
   margin: 0;
   color: #2c3e50;
+  white-space: pre-wrap; /* Giữ định dạng xuống dòng */
 }
 
-.flashcard p {
-  font-size: 1rem;
-  color: #555;
-  white-space: pre-wrap;
-  margin: 0;
-}
-
-/* Nút Sửa/Xóa nằm dưới thẻ */
-.flashcard .actions {
+/* Nút Sửa/Xóa (nằm bên ngoài thẻ) */
+#card-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
 }
-
-.flashcard .actions button {
+#card-actions button {
   background-color: transparent;
-  padding: 5px 10px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
   font-weight: 600;
   border: 2px solid;
 }
 
-/* --- 7. Thông báo trạng thái --- */
+/* --- 6. Thông báo trạng thái --- */
 .status-message {
   text-align: center;
   color: #888;
   font-style: italic;
   font-size: 1.1rem;
   padding: 30px 0;
-  /* Đảm bảo nó chiếm cả lưới */
-  grid-column: 1 / -1;
 }
